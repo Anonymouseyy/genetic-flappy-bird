@@ -1,0 +1,15 @@
+h1 {
+    font-size: 50px;
+    font-weight: bold;
+}
+ 
+canvas {
+    border: 1px solid black;
+    margin-top: 10px;
+}
+
+.body-content {
+    height: 100%;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
