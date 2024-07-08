@@ -20,7 +20,13 @@ function updateCanvas() {
     }
 
     if (obstacles[obstacles.length-1].x <= 0.6) {
-        obstacles.push(new Obstacle(1, (Math.random()*0.5)+0.25, 0.25, 0.05, 0.005));
+        obstacles.push(new Obstacle(1, (Math.random()*0.5)+0.25, 0.25, 0.05, 0.005 + score*0.000000001));
+    }
+
+    let obsRects = obstacles[0].getRects();
+    let playerCircle = player.getCircle();
+    if (rectCircleColliding(playerCircle, obsRects[0]) || rectCircleColliding(playerCircle, obsRects[1])) {
+        restart();
     }
 
     player.update();
@@ -82,8 +88,11 @@ let player = {
         }
     },
     jump : function() {
-        this.yvel = -0.00002;
+        this.yvel = -0.000015;
     },
+    getCircle : function() {
+        return {x:this.x * gameArea.canvas.width, y:this.y * gameArea.canvas.height, r:this.radius * gameArea.canvas.height}
+    }
 }
 
 class Obstacle {
@@ -107,6 +116,26 @@ class Obstacle {
     update() {
         this.x -= this.speed;
     }
+
+    getRects() {
+        return [{x:this.x*gameArea.canvas.width, y:0, w:this.width*gameArea.canvas.width, h:this.openingStart*gameArea.canvas.height}, 
+            {x:this.x*gameArea.canvas.width, y:(this.openingStart+this.opening)*gameArea.canvas.height, w:this.width*gameArea.canvas.width, h:gameArea.canvas.height}];
+    }
+}
+
+function rectCircleColliding(circle, rect){
+    var distX = Math.abs(circle.x - rect.x-rect.w/2);
+    var distY = Math.abs(circle.y - rect.y-rect.h/2);
+
+    if (distX > (rect.w/2 + circle.r)) { return false; }
+    if (distY > (rect.h/2 + circle.r)) { return false; }
+
+    if (distX <= (rect.w/2)) { return true; } 
+    if (distY <= (rect.h/2)) { return true; }
+
+    var dx=distX-rect.w/2;
+    var dy=distY-rect.h/2;
+    return (dx*dx+dy*dy<=(circle.r*circle.r));
 }
 
 function start() {
@@ -114,6 +143,11 @@ function start() {
     player.center();
     player.draw();
     obstacles.push(new Obstacle(1, (Math.random()*0.5)+0.25, 0.25, 0.05, 0.005));
+}
+
+function restart() {
+    player.dead();
+    obstacles = [new Obstacle(1, (Math.random()*0.5)+0.25, 0.25, 0.05, 0.005)];
 }
 
 
