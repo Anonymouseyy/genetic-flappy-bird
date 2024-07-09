@@ -10,7 +10,9 @@ canvas {
 
 .header {
     display: flex;
-    direction: column;
+    direction:  row;
+    gap: 20px;
+    align-items: center;
 }
 
 .body-content {
@@ -80,4 +82,34 @@ input:checked + .slider:before {
 
 .slider.round:before {
   border-radius: 50%;
+}
+
+button {
+  height: 100%;
+  font-size: 42px;
+}
+
+.toggle {
+  display: flex;
+  direction:  row;
+  gap: 8px;
+  align-items: center;
+  font-size: 24px;
+}
+
+.options-and-controls {
+  display: flex;
+  direction: row;
+  gap: 25px;
+}
+
+.label {
+  font-size: 32px;
+  font-weight: bold;
+  height: auto;
+}
+
+.input {
+  height: 100%;
+  font-size: 26px;
 }
