@@ -1,5 +1,4 @@
 function humanStart() {
-    gameArea.start();
     player.center();
     player.draw();
     obstacles = [new Obstacle(1, (Math.random()*0.5)+0.25, 0.25, 0.05, 0.005)];

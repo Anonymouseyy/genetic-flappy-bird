@@ -40,3 +40,5 @@ document.getElementById("restart").addEventListener("click", function() {
         humanRestart();
     }
 });
+
+gameArea.start();

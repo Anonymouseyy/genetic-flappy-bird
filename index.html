@@ -30,15 +30,16 @@
             <h2 class="label" id="avgFitness">Average Fitness: 0</h2>
             <h2 class="label">Total Population:</label>
             <input type="number" class="input" id="population" name="population" min="5" max="20" value="10" step="1">
-            <br>
             <h2 class="label">Mutation Rate:</label>
             <input type="number" class="input" id="mutationRate" name="mutationRate" min="0" max="1" value="0.01" step="0.01">
+            <h2 class="label">Hidden Layer Nodes:</label>
+            <input type="number" class="input" id="hiddenLayerNodes" name="hiddenLayerNodes" min="2" max="8" value="4" step="1">
         </div>
     </body>
 
-    <script src="ai.js"></script>
-    <script src="human.js"></script>
     <script src="neuralnetwork.js"></script>
+    <script src="ai.js"></script>
+    <script src="human.js"></script> 
     <script src="obstacle.js"></script>
     <script src="script.js"></script>
 </html>

@@ -3,7 +3,7 @@ function sigmoid(x) {
 }
 
 function step(x) {
-    if (x > 0) {
+    if (x > 0.5) {
         return 1;
     }
     return 0;
