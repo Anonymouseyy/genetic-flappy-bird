@@ -2,13 +2,15 @@ let aiPlayers = [];
 let xTraveled = 0;
 let avgFitness = 0;
 let generations = 0;
+let cancel = false;
 
 class AIPlayer {
     constructor(brain) {
         this.x = 0.2;
         this.y = 0.5;
         this.yvel = 0;
-        this.radius = 0.05
+        this.radius = 0.05;
+        this.dead = false;
         this.brain = brain;
     }
     
@@ -25,18 +27,9 @@ class AIPlayer {
         this.yvel = 0;
     }
 
-    dead() {
-        this.center();
-        score = 0;
-    }
-
     update() {
         this.yvel += 0.000002;
         this.y += this.yvel*gameArea.canvas.height;
-        
-        if (this.y < this.radius || this.y > 1-this.radius) {
-            this.dead();
-        }
     }
 
     jump() {
@@ -48,44 +41,6 @@ class AIPlayer {
     }
 }
 
-function aiUpdateCanvas() {
-    xTraveled++;
-    gameArea.updateSize();
-
-    gameArea.context.rect(0, 0, gameArea.canvas.width, gameArea.canvas.height);
-    gameArea.context.fillStyle = "#3d87ff";
-    gameArea.context.fill();
-
-    for (const obs of obstacles) {
-        obs.update();
-        obs.draw();
-
-        if (obs.x < -obs.width) {
-            score++;
-            obstacles.splice(0, 1);
-        }
-    }
-
-    if (obstacles[obstacles.length-1].x <= 0.6) {
-        obstacles.push(new Obstacle(1, (Math.random()*0.5)+0.25, 0.25, 0.05, 0.005));
-    }
-
-    let obsRects = obstacles[0].getRects();
-    for (let aiPlayer of aiPlayers) {
-        aiPlayer.update();
-        aiPlayer.draw();
-
-        let playerCircle = aiPlayer.getCircle();
-        if (rectCircleColliding(playerCircle, obsRects[0]) || rectCircleColliding(playerCircle, obsRects[1])) {
-            console.log("collision");
-        }
-    }
-
-    gameArea.context.fillStyle = "black";
-    gameArea.context.font = "50px Arial";
-    gameArea.context.fillText(`Score: ${score}`, 10, 50);
-}
-
 function generateRandomWeights(len) {
     weights = [];
     
@@ -94,6 +49,80 @@ function generateRandomWeights(len) {
     }
     
     return weights;
+}
+
+function sleep(milliseconds) {
+    var start = new Date().getTime();
+    for (var i = 0; i < 1e7; i++) {
+        if ((new Date().getTime() - start) > milliseconds){
+            break;
+        }
+    }
+}
+
+function testGeneration() {
+    let fitnesses = new Array(aiPlayers.length).fill(0);
+    xTraveled = 0;
+
+    while (aiPlayers.length > 0) {
+        if (cancel) { break; }
+        xTraveled++;
+        gameArea.updateSize();
+
+        gameArea.context.rect(0, 0, gameArea.canvas.width, gameArea.canvas.height);
+        gameArea.context.fillStyle = "#3d87ff";
+        gameArea.context.fill();
+
+        for (const obs of obstacles) {
+            obs.update();
+            obs.draw();
+
+            if (obs.x < -obs.width) {
+                score++;
+                obstacles.splice(0, 1);
+            }
+        }
+
+        if (obstacles[obstacles.length-1].x <= 0.6) {
+            obstacles.push(new Obstacle(1, (Math.random()*0.5)+0.25, 0.25, 0.05, 0.005));
+        }
+
+        let obsRects = obstacles[0].getRects();
+        for (let i = 0; i < aiPlayers.length; i++) {
+            let aiPlayer = aiPlayers[i];
+            if (aiPlayer.dead) { continue; }
+
+            aiPlayer.update();
+            aiPlayer.draw();
+
+            let playerCircle = aiPlayer.getCircle();
+            if (rectCircleColliding(playerCircle, obsRects[0]) || rectCircleColliding(playerCircle, obsRects[1]) || aiPlayer.y < aiPlayer.radius || aiPlayer.y > 1-aiPlayer.radius) {
+                aiPlayers.dead = true;
+                fitnesses[i] = xTraveled;
+            }
+        }
+
+        gameArea.context.fillStyle = "black";
+        gameArea.context.font = "50px Arial";
+        gameArea.context.fillText(`Score: ${xTraveled}`, 10, 50);
+        sleep(20);
+    }
+
+    return fitnesses;
+}
+
+function runSimulation(mutRate) {
+    document.getElementById("generations").innerText = `Total Generations: ${totalGenerations}`;
+    let fitnesses = testGeneration();
+
+    while(true) {
+        if (cancel) { break; }
+        generations++;
+        document.getElementById("generations").innerText = `Total Generations: ${totalGenerations}`;
+
+        console.log(fitnesses);
+        fitnesses = testGeneration();
+    }
 }
 
 function aiStart(popSize, mutRate, hiddenLayers) {
@@ -112,5 +141,6 @@ function aiStart(popSize, mutRate, hiddenLayers) {
         clearInterval(updateFunction);
     }
 
-    updateFunction = setInterval(aiUpdateCanvas, 20);
+    generations = 1;
+    runSimulation(mutRate);
 }

@@ -26,8 +26,19 @@ let gameArea = {
 gameArea.updateSize();
 
 document.getElementById("start").addEventListener("click", function() {
+    document.getElementById("generations").innerText = "Total Generations: 0";
+    document.getElementById("avgFitness").innerText = "Average Fitness: 0%";
     if (document.getElementById("ai").checked) {
-        console.log("AI stuff");
+        cancel = true;
+
+        setTimeout(() => { 
+            cancel = false; 
+        }, 10);
+        
+        let popSize = document.getElementById("population").value;
+        let mutRate = document.getElementById("mutationRate").value;
+        let hiddenLayerNodes = document.getElementById("hiddenLayerNodes").value;
+        aiStart(popSize, mutRate, hiddenLayerNodes);
     } else {
         humanStart();
     }
@@ -35,7 +46,13 @@ document.getElementById("start").addEventListener("click", function() {
 
 document.getElementById("restart").addEventListener("click", function() {
     if (document.getElementById("ai").checked) {
-        console.log("AI stuff");
+        cancel = true;
+
+        setTimeout(() => { 
+            cancel = false; 
+            document.getElementById("generations").innerText = "Total Generations: 0";
+            document.getElementById("avgFitness").innerText = "Average Fitness: 0%";
+        }, 10);
     } else {
         humanRestart();
     }
