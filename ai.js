@@ -46,18 +46,21 @@ function generateRandomWeights(len) {
     weights = [];
     
     for (let i = 0; i < len-1; i++) {
-        weights.push(Math.random());
+        weights.push(Math.random() * 2 - 1);
     }
     
-    weights.push(Math.random()*0.5)
+    weights.push(Math.random() * 0.5 - 0.25);
     return weights;
 }
 
 async function testGeneration() {
     let fitnesses = new Array(aiPlayers.length).fill(0);
     xTraveled = 0;
+    aiLastObs = null;
+    obstacles = [new Obstacle(1, (Math.random()*0.5)+0.25, 0.25, 0.05, 0.005)];
+    let numDead = 0;
 
-    while (aiPlayers.length > 0) {
+    while (numDead+1 <= aiPlayers.length) {
         if (cancel) { break; }
         xTraveled++;
         gameArea.updateSize();
@@ -75,7 +78,7 @@ async function testGeneration() {
             obs.update();
             obs.draw();
 
-            if (obs.x < 0.15) {
+            if (obs.x < 0.10) {
                 score++;
                 aiLastObs = obstacles.splice(0, 1)[0];
             }
@@ -89,6 +92,7 @@ async function testGeneration() {
         for (let i = 0; i < aiPlayers.length; i++) {
             let aiPlayer = aiPlayers[i];
             if (aiPlayer.dead) { continue; }
+            console.log(aiPlayer.dead)
 
             aiPlayer.update();
             aiPlayer.draw();
@@ -96,6 +100,7 @@ async function testGeneration() {
             let playerCircle = aiPlayer.getCircle();
             if (rectCircleColliding(playerCircle, obsRects[0]) || rectCircleColliding(playerCircle, obsRects[1]) || aiPlayer.y < aiPlayer.radius || aiPlayer.y > 1-aiPlayer.radius) {
                 aiPlayers.dead = true;
+                numDead++;
                 fitnesses[i] = xTraveled;
             }
 
@@ -105,7 +110,6 @@ async function testGeneration() {
             let yVel = aiPlayer.yvel;
 
             let inf = aiPlayer.brain.inference([curY, xToNext, obsTop, yVel]);
-            console.log([curY, xToNext, obsTop, yVel])
 
             if (inf === 1) {
                 aiPlayer.jump();
@@ -132,7 +136,7 @@ async function runSimulation(mutRate) {
         document.getElementById("generations").innerText = `Total Generations: ${xTraveled}`;
 
         console.log(fitnesses);
-        fitnesses = testGeneration();
+        fitnesses = await testGeneration();
     }
 }
 
@@ -151,7 +155,6 @@ function aiStart(popSize, mutRate, hiddenLayers) {
         aiPlayers[i].draw();
     }
     
-    obstacles = [new Obstacle(1, (Math.random()*0.5)+0.25, 0.25, 0.05, 0.005)];
     if (updateFunction) {
         clearInterval(updateFunction);
     }
