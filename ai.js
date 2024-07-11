@@ -44,23 +44,15 @@ class AIPlayer {
 function generateRandomWeights(len) {
     weights = [];
     
-    for (let i = 0; i < len; i++) {
+    for (let i = 0; i < len-1; i++) {
         weights.push(Math.random());
     }
     
+    weights.push(Math.random()*0.5)
     return weights;
 }
 
-function sleep(milliseconds) {
-    var start = new Date().getTime();
-    for (var i = 0; i < 1e7; i++) {
-        if ((new Date().getTime() - start) > milliseconds){
-            break;
-        }
-    }
-}
-
-function testGeneration() {
+async function testGeneration() {
     let fitnesses = new Array(aiPlayers.length).fill(0);
     xTraveled = 0;
 
@@ -77,7 +69,7 @@ function testGeneration() {
             obs.update();
             obs.draw();
 
-            if (obs.x < -obs.width) {
+            if (obs.x < 0.15) {
                 score++;
                 obstacles.splice(0, 1);
             }
@@ -100,25 +92,37 @@ function testGeneration() {
                 aiPlayers.dead = true;
                 fitnesses[i] = xTraveled;
             }
+
+            let curY = aiPlayer.y;
+            let xToNext = obstacles[0].x - aiPlayer.x;
+            let obsTop = obstacles[0].openingStart;
+            let yVel = aiPlayer.yvel;
+
+            let inf = aiPlayer.brain.inference([curY, xToNext, obsTop, yVel]);
+
+            if (inf === 1) {
+                aiPlayer.jump();
+            }
         }
 
         gameArea.context.fillStyle = "black";
         gameArea.context.font = "50px Arial";
         gameArea.context.fillText(`Score: ${xTraveled}`, 10, 50);
-        sleep(20);
+
+        await new Promise(resolve => setTimeout(resolve, 20));
     }
 
     return fitnesses;
 }
 
-function runSimulation(mutRate) {
-    document.getElementById("generations").innerText = `Total Generations: ${totalGenerations}`;
+async function runSimulation(mutRate) {
+    document.getElementById("generations").innerText = `Total Generations: ${xTraveled}`;
     let fitnesses = testGeneration();
 
     while(true) {
         if (cancel) { break; }
         generations++;
-        document.getElementById("generations").innerText = `Total Generations: ${totalGenerations}`;
+        document.getElementById("generations").innerText = `Total Generations: ${xTraveled}`;
 
         console.log(fitnesses);
         fitnesses = testGeneration();
@@ -126,6 +130,10 @@ function runSimulation(mutRate) {
 }
 
 function aiStart(popSize, mutRate, hiddenLayers) {
+    hiddenLayers = parseInt(hiddenLayers);
+    popSize = parseInt(popSize);
+    cancel = false;
+
     for (let i = 0; i < popSize; i++) {
         hiddenWeights = [];
         for (let j = 0; j < hiddenLayers; j++) {
@@ -133,7 +141,7 @@ function aiStart(popSize, mutRate, hiddenLayers) {
         }
 
         aiPlayers.push(new AIPlayer(new NeuralNetwork(4, hiddenLayers, hiddenWeights, generateRandomWeights(hiddenLayers+1))));
-        aiplayers[i].draw();
+        aiPlayers[i].draw();
     }
     
     obstacles = [new Obstacle(1, (Math.random()*0.5)+0.25, 0.25, 0.05, 0.005)];

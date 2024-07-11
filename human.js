@@ -69,7 +69,7 @@ function humanUpdateCanvas() {
         obs.update();
         obs.draw();
 
-        if (obs.x < -obs.width) {
+        if (obs.x < player.x-player.radius) {
             score++;
             obstacles.splice(0, 1);
         }
