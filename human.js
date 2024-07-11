@@ -1,4 +1,7 @@
+let lastObs = null;
+
 function humanStart() {
+    lastObs = null;
     player.center();
     player.draw();
     obstacles = [new Obstacle(1, (Math.random()*0.5)+0.25, 0.25, 0.05, 0.005)];
@@ -10,7 +13,7 @@ function humanStart() {
     updateFunction = setInterval(humanUpdateCanvas, 20);
 }
 
-function humanRestart() {
+function restart() {
     player.dead();
     obstacles = [new Obstacle(1, (Math.random()*0.5)+0.25, 0.25, 0.05, 0.005)];
 
@@ -46,7 +49,7 @@ let player = {
         this.y += this.yvel*gameArea.canvas.height;
         
         if (this.y < this.radius || this.y > 1-this.radius) {
-            humanRestart();
+            restart();
         }
     },
     jump : function() {
@@ -64,6 +67,10 @@ function humanUpdateCanvas() {
     gameArea.context.fillStyle = "#3d87ff";
     gameArea.context.fill();
 
+    if (lastObs) {
+        lastObs.update();
+        lastObs.draw();
+    }
 
     for (const obs of obstacles) {
         obs.update();
@@ -71,7 +78,7 @@ function humanUpdateCanvas() {
 
         if (obs.x < player.x-player.radius) {
             score++;
-            obstacles.splice(0, 1);
+            lastObs = obstacles.splice(0, 1)[0];
         }
     }
 
@@ -82,7 +89,7 @@ function humanUpdateCanvas() {
     let obsRects = obstacles[0].getRects();
     let playerCircle = player.getCircle();
     if (rectCircleColliding(playerCircle, obsRects[0]) || rectCircleColliding(playerCircle, obsRects[1])) {
-        humanRestart();
+        restart();
     }
 
     player.update();

@@ -20,7 +20,7 @@ let gameArea = {
     },
     clear : function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    }
+    },
 }
 
 gameArea.updateSize();
@@ -44,18 +44,15 @@ document.getElementById("start").addEventListener("click", function() {
     }
 });
 
-document.getElementById("restart").addEventListener("click", function() {
-    if (document.getElementById("ai").checked) {
-        cancel = true;
+document.getElementById("stop").addEventListener("click", function() {
+    cancel = true;
 
-        setTimeout(() => { 
-            cancel = false; 
-            document.getElementById("generations").innerText = "Total Generations: 0";
-            document.getElementById("avgFitness").innerText = "Average Fitness: 0%";
-        }, 10);
-    } else {
-        humanRestart();
+    if (updateFunction) {
+        clearInterval(updateFunction);
     }
+
+    updateFunction = setInterval(gameArea.updateSize, 20);
 });
 
 gameArea.start();
+updateFunction = setInterval(gameArea.updateSize, 20);

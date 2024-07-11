@@ -3,6 +3,7 @@ let xTraveled = 0;
 let avgFitness = 0;
 let generations = 0;
 let cancel = false;
+let aiLastObs = null;
 
 class AIPlayer {
     constructor(brain) {
@@ -65,13 +66,18 @@ async function testGeneration() {
         gameArea.context.fillStyle = "#3d87ff";
         gameArea.context.fill();
 
+        if (aiLastObs) {
+            aiLastObs.update();
+            aiLastObs.draw();
+        }
+
         for (const obs of obstacles) {
             obs.update();
             obs.draw();
 
             if (obs.x < 0.15) {
                 score++;
-                obstacles.splice(0, 1);
+                aiLastObs = obstacles.splice(0, 1)[0];
             }
         }
 
@@ -99,6 +105,7 @@ async function testGeneration() {
             let yVel = aiPlayer.yvel;
 
             let inf = aiPlayer.brain.inference([curY, xToNext, obsTop, yVel]);
+            console.log([curY, xToNext, obsTop, yVel])
 
             if (inf === 1) {
                 aiPlayer.jump();
@@ -117,7 +124,7 @@ async function testGeneration() {
 
 async function runSimulation(mutRate) {
     document.getElementById("generations").innerText = `Total Generations: ${xTraveled}`;
-    let fitnesses = testGeneration();
+    let fitnesses = await testGeneration();
 
     while(true) {
         if (cancel) { break; }

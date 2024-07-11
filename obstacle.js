@@ -9,7 +9,7 @@ class Obstacle {
 
     draw() {
         gameArea.context.beginPath();
-        gameArea.context.rect(this.x*gameArea.canvas.width, 0, this.width*gameArea.canvas.width, this.openingStart*gameArea.canvas.height);
+        gameArea.context.rect(this.x*gameArea.canvas.width, -10, this.width*gameArea.canvas.width, this.openingStart*gameArea.canvas.height);
         gameArea.context.rect(this.x*gameArea.canvas.width, (this.openingStart+this.opening)*gameArea.canvas.height, this.width*gameArea.canvas.width, gameArea.canvas.height);
         gameArea.context.fillStyle = "#12b300";
         gameArea.context.fill();
