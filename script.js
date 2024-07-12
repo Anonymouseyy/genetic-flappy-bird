@@ -27,7 +27,6 @@ gameArea.updateSize();
 
 document.getElementById("start").addEventListener("click", function() {
     document.getElementById("generations").innerText = "Total Generations: 0";
-    document.getElementById("avgFitness").innerText = "Average Fitness: 0%";
     if (document.getElementById("ai").checked) {
         cancel = true;
 

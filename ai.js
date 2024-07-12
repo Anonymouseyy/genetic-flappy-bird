@@ -46,11 +46,17 @@ function generateRandomWeights(len) {
     weights = [];
     
     for (let i = 0; i < len-1; i++) {
-        weights.push(Math.random() * 2 - 1);
+        weights.push(Math.random() * 1 - 0.5);
     }
     
-    weights.push(Math.random() * 2 - 1);
+    weights.push(Math.random() * 1 - 0.5);
     return weights;
+}
+
+function normalizeFitnesses(fitnesses) {
+    return fitnesses.map(function (x) {
+        return Math.pow(x, 2);
+    });
 }
 
 function selectRandom(probabilities, sum=undefined) {
@@ -79,7 +85,7 @@ function crossAndMutate(brain1, brain2, mutRate) {
 
         for (let j = 0; j < newWeights.length; j++) {
             if (Math.random() < mutRate) {
-                newWeights[j] = Math.random() * 2 - 1;
+                newWeights[j] += Math.random() - 0.5;
             }
         }
 
@@ -91,7 +97,7 @@ function crossAndMutate(brain1, brain2, mutRate) {
 
     for (let i = 0; i < newFinalWeights.length; i++) {
         if (Math.random() < mutRate) {
-            newFinalWeights[i] = Math.random() * 2 - 1;
+            newFinalWeights[i] += Math.random() * 1 - 0.5;
         }
     }
 
@@ -149,11 +155,11 @@ async function testGeneration() {
             }
 
             let curY = aiPlayer.y;
-            let xToNext = obstacles[0].x - aiPlayer.x;
-            let obsTop = obstacles[0].openingStart;
+            let nextX = obstacles[0].x;
+            let obsOpeningMiddle = obstacles[0].openingStart+(obstacles[0].opening/2);
             let yVel = aiPlayer.yvel;
 
-            let inf = aiPlayer.brain.inference([curY, xToNext, obsTop, yVel]);
+            let inf = aiPlayer.brain.inference([curY, nextX, obsOpeningMiddle, yVel]);
 
             if (inf === 1) {
                 aiPlayer.jump();
@@ -178,7 +184,7 @@ async function runSimulation(popSize, mutRate) {
         if (cancel) { break; }
         generations++;
         document.getElementById("generations").innerText = `Total Generations: ${generations}`;
-        console.log(fitnesses);
+        fitnesses = normalizeFitnesses(fitnesses);
         
         let newAiPlayers = [];
         let fitnessSum = fitnesses.reduce((a, b) => a + b, 0);
