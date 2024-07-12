@@ -87,6 +87,10 @@ function crossAndMutate(brain1, brain2, mutRate) {
             if (Math.random() < mutRate) {
                 newWeights[j] += Math.random() - 0.5;
             }
+
+            if (Math.random() < mutRate/10) {
+                newWeights[j] = Math.random() * 2 - 1;
+            }
         }
 
         newHiddenWeights.push(newWeights);
@@ -101,7 +105,7 @@ function crossAndMutate(brain1, brain2, mutRate) {
         }
     }
 
-    return new NeuralNetwork(4, brain1.hiddenNodes.length, newHiddenWeights, newFinalWeights);
+    return new NeuralNetwork(5, brain1.hiddenNodes.length, newHiddenWeights, newFinalWeights);
 }
 
 async function testGeneration() {
@@ -156,10 +160,11 @@ async function testGeneration() {
 
             let curY = aiPlayer.y;
             let nextX = obstacles[0].x;
-            let obsOpeningMiddle = obstacles[0].openingStart+(obstacles[0].opening/2);
+            let obsOpeningTop = obstacles[0].openingStart;
+            let obsOpeningBot = obstacles[0].openingStart+obstacles[0].opening;
             let yVel = aiPlayer.yvel;
 
-            let inf = aiPlayer.brain.inference([curY, nextX, obsOpeningMiddle, yVel]);
+            let inf = aiPlayer.brain.inference([curY, nextX, yVel, 1-obsOpeningTop, 1-obsOpeningBot]);
 
             if (inf === 1) {
                 aiPlayer.jump();
@@ -207,14 +212,15 @@ function aiStart(popSize, mutRate, hiddenLayers) {
     hiddenLayers = parseInt(hiddenLayers);
     popSize = parseInt(popSize);
     cancel = false;
+    aiPlayers = [];
 
     for (let i = 0; i < popSize; i++) {
         hiddenWeights = [];
         for (let j = 0; j < hiddenLayers; j++) {
-            hiddenWeights.push(generateRandomWeights(5));
+            hiddenWeights.push(generateRandomWeights(6));
         }
 
-        aiPlayers.push(new AIPlayer(new NeuralNetwork(4, hiddenLayers, hiddenWeights, generateRandomWeights(hiddenLayers+1))));
+        aiPlayers.push(new AIPlayer(new NeuralNetwork(5, hiddenLayers, hiddenWeights, generateRandomWeights(hiddenLayers+1))));
         aiPlayers[i].draw();
     }
     
