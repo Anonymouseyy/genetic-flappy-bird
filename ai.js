@@ -49,8 +49,53 @@ function generateRandomWeights(len) {
         weights.push(Math.random() * 2 - 1);
     }
     
-    weights.push(Math.random() * 0.5 - 0.25);
+    weights.push(Math.random() * 2 - 1);
     return weights;
+}
+
+function selectRandom(probabilities, sum=undefined) {
+    // Select from population based on fitness probability
+    if (sum === undefined) {
+        probabilities.reduce((a, b) => a + b, 0);
+    }
+
+    let winner = Math.random()*sum;
+    let threshold = 0;
+    for (let i = 0; i < probabilities.length; i++) {
+        threshold += parseFloat(probabilities[i]);
+        if (threshold > winner) {
+            return i;
+        }
+    }
+}
+
+function crossAndMutate(brain1, brain2, mutRate) {
+    if (brain1.inputLen !== brain2.inputLen) { throw Error("Brains are of different structure"); }
+    let newHiddenWeights = [];
+
+    for (let i = 0; i < brain1.hiddenNodes.length; i++) {
+        let cut = Math.floor(Math.random()*brain1.inputLen);
+        let newWeights = brain1.hiddenNodes[i].weights.slice(0, cut).concat(brain2.hiddenNodes[i].weights.slice(cut));
+
+        for (let j = 0; j < newWeights.length; j++) {
+            if (Math.random() < mutRate) {
+                newWeights[j] = Math.random() * 2 - 1;
+            }
+        }
+
+        newHiddenWeights.push(newWeights);
+    }
+
+    let cut = Math.floor(Math.random()*brain1.finalNode.inputLen);
+    let newFinalWeights = brain1.finalNode.weights.slice(0, cut).concat(brain2.finalNode.weights.slice(cut));
+
+    for (let i = 0; i < newFinalWeights.length; i++) {
+        if (Math.random() < mutRate) {
+            newFinalWeights[i] = Math.random() * 2 - 1;
+        }
+    }
+
+    return new NeuralNetwork(4, brain1.hiddenNodes.length, newHiddenWeights, newFinalWeights);
 }
 
 async function testGeneration() {
@@ -92,14 +137,13 @@ async function testGeneration() {
         for (let i = 0; i < aiPlayers.length; i++) {
             let aiPlayer = aiPlayers[i];
             if (aiPlayer.dead) { continue; }
-            console.log(aiPlayer.dead)
 
             aiPlayer.update();
             aiPlayer.draw();
 
             let playerCircle = aiPlayer.getCircle();
             if (rectCircleColliding(playerCircle, obsRects[0]) || rectCircleColliding(playerCircle, obsRects[1]) || aiPlayer.y < aiPlayer.radius || aiPlayer.y > 1-aiPlayer.radius) {
-                aiPlayers.dead = true;
+                aiPlayers[i].dead = true;
                 numDead++;
                 fitnesses[i] = xTraveled;
             }
@@ -126,21 +170,34 @@ async function testGeneration() {
     return fitnesses;
 }
 
-async function runSimulation(mutRate) {
-    document.getElementById("generations").innerText = `Total Generations: ${xTraveled}`;
+async function runSimulation(popSize, mutRate) {
+    document.getElementById("generations").innerText = `Total Generations: ${generations}`;
     let fitnesses = await testGeneration();
 
     while(true) {
         if (cancel) { break; }
         generations++;
-        document.getElementById("generations").innerText = `Total Generations: ${xTraveled}`;
-
+        document.getElementById("generations").innerText = `Total Generations: ${generations}`;
         console.log(fitnesses);
+        
+        let newAiPlayers = [];
+        let fitnessSum = fitnesses.reduce((a, b) => a + b, 0);
+
+        for (let i = 0; i < popSize; i++) {
+            newAiPlayers.push(new AIPlayer(
+                crossAndMutate(aiPlayers[selectRandom(fitnesses, fitnessSum)].brain, aiPlayers[selectRandom(fitnesses, fitnessSum)].brain, mutRate)
+            ));
+            newAiPlayers[i].draw();
+        }
+        
+        aiPlayers = newAiPlayers;
+        
         fitnesses = await testGeneration();
     }
 }
 
 function aiStart(popSize, mutRate, hiddenLayers) {
+    cancel = true;
     hiddenLayers = parseInt(hiddenLayers);
     popSize = parseInt(popSize);
     cancel = false;
@@ -160,5 +217,5 @@ function aiStart(popSize, mutRate, hiddenLayers) {
     }
 
     generations = 1;
-    runSimulation(mutRate);
+    runSimulation(popSize, mutRate);
 }
