@@ -92,21 +92,20 @@ function crossAndMutate(brain1, brain2, mutRate) {
         newHiddenWeights.push(newWeights);
     }
 
-    let cut = Math.floor(Math.random()*brain1.finalNodes[0].inputLen);
-    let newFinalWeights = [brain1.finalNodes[0].weights.slice(0, cut).concat(brain2.finalNodes[0].weights.slice(cut))];
-    cut = Math.floor(Math.random()*brain1.finalNodes[0].inputLen);
-    newFinalWeights.push(brain1.finalNodes[1].weights.slice(0, cut).concat(brain2.finalNodes[1].weights.slice(cut)));
 
-    for (let i = 0; i < newFinalWeights[0].length; i++) {
-        if (Math.random() < mutRate) {
-            newFinalWeights[0][i] += Math.random() * 1 - 0.5;
-        }
-    }
+    let newFinalWeights = [];
 
-    for (let i = 0; i < newFinalWeights[1].length; i++) {
-        if (Math.random() < mutRate) {
-            newFinalWeights[1][i] += Math.random() * 1 - 0.5;
+    for (let i = 0; i < 2; i++) {
+        let cut = Math.floor(Math.random()*brain1.finalNodes[i].weights.length);
+        let newWeights = brain1.finalNodes[i].weights.slice(0, cut).concat(brain2.finalNodes[i].weights.slice(cut));
+
+        for (let j = 0; j < brain1.finalNodes[i].weights.length; j++) {
+            if (Math.random() < mutRate) {
+                newWeights[j] += Math.random() - 0.5;
+            }
         }
+
+        newFinalWeights.push(newWeights);
     }
 
     return new NeuralNetwork(5, brain1.hiddenNodes.length, newHiddenWeights, newFinalWeights);
@@ -168,7 +167,7 @@ async function testGeneration() {
             let obsOpeningBot = obstacles[0].openingStart+obstacles[0].opening;
             let yVel = aiPlayer.yvel;
 
-            let inf = aiPlayer.brain.inference([curY, nextX, yVel, 1-obsOpeningTop, 1-obsOpeningBot]);
+            let inf = aiPlayer.brain.inference([curY, nextX, yVel, obsOpeningTop, obsOpeningBot]);
 
             if (inf[1] >= inf[0]) {
                 aiPlayer.jump();
