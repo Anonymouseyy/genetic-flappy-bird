@@ -2,13 +2,6 @@ function sigmoid(x) {
     return Math.pow(Math.E, x) / (1 + Math.pow(Math.E, x));
 }
 
-function step(x) {
-    if (x > 0) {
-        return 1;
-    }
-    return 0;
-}
-
 class Neuron {
     constructor(inputLen, weights) {
         this.inputLen = inputLen;
@@ -39,7 +32,7 @@ class NeuralNetwork {
     constructor(inputLen, numHiddenNodes, hiddenWeights, outputWeights) {
         if (hiddenWeights.length != numHiddenNodes) { throw Error("Weights and hidden layer count inconsistent"); }
         if (inputLen+1 != hiddenWeights[0].length) { throw Error("Input length and weights count inconsistent"); }
-        if (outputWeights.length != numHiddenNodes+1) { throw Error("Output node and its weights inconsistent"); }
+        if (outputWeights[0].length != numHiddenNodes+1) { throw Error("Output node and its weights inconsistent"); }
 
         this.inputLen = inputLen;
         this.hiddenNodes = [];
@@ -48,7 +41,7 @@ class NeuralNetwork {
             this.hiddenNodes.push(new Neuron(inputLen, hiddenWeights[i]));
         }
 
-        this.finalNode = new Neuron(numHiddenNodes, outputWeights);
+        this.finalNodes = [new Neuron(numHiddenNodes, outputWeights[0]), new Neuron(numHiddenNodes, outputWeights[1])];
     }
 
     inference(inputs) {
@@ -61,6 +54,6 @@ class NeuralNetwork {
             outs.push(sigmoid(node.evaluate(inputs)));
         }
 
-        return step(this.finalNode.evaluate(outs));
+        return [sigmoid(this.finalNodes[0].evaluate(outs)), sigmoid(this.finalNodes[1].evaluate(outs))];
     }
 }

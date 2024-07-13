@@ -87,21 +87,25 @@ function crossAndMutate(brain1, brain2, mutRate) {
             if (Math.random() < mutRate) {
                 newWeights[j] += Math.random() - 0.5;
             }
-
-            if (Math.random() < mutRate/10) {
-                newWeights[j] = Math.random() * 2 - 1;
-            }
         }
 
         newHiddenWeights.push(newWeights);
     }
 
-    let cut = Math.floor(Math.random()*brain1.finalNode.inputLen);
-    let newFinalWeights = brain1.finalNode.weights.slice(0, cut).concat(brain2.finalNode.weights.slice(cut));
+    let cut = Math.floor(Math.random()*brain1.finalNodes[0].inputLen);
+    let newFinalWeights = [brain1.finalNodes[0].weights.slice(0, cut).concat(brain2.finalNodes[0].weights.slice(cut))];
+    cut = Math.floor(Math.random()*brain1.finalNodes[0].inputLen);
+    newFinalWeights.push(brain1.finalNodes[1].weights.slice(0, cut).concat(brain2.finalNodes[1].weights.slice(cut)));
 
-    for (let i = 0; i < newFinalWeights.length; i++) {
+    for (let i = 0; i < newFinalWeights[0].length; i++) {
         if (Math.random() < mutRate) {
-            newFinalWeights[i] += Math.random() * 1 - 0.5;
+            newFinalWeights[0][i] += Math.random() * 1 - 0.5;
+        }
+    }
+
+    for (let i = 0; i < newFinalWeights[1].length; i++) {
+        if (Math.random() < mutRate) {
+            newFinalWeights[1][i] += Math.random() * 1 - 0.5;
         }
     }
 
@@ -166,7 +170,7 @@ async function testGeneration() {
 
             let inf = aiPlayer.brain.inference([curY, nextX, yVel, 1-obsOpeningTop, 1-obsOpeningBot]);
 
-            if (inf === 1) {
+            if (inf[1] >= inf[0]) {
                 aiPlayer.jump();
             }
         }
@@ -220,7 +224,7 @@ function aiStart(popSize, mutRate, hiddenLayers) {
             hiddenWeights.push(generateRandomWeights(6));
         }
 
-        aiPlayers.push(new AIPlayer(new NeuralNetwork(5, hiddenLayers, hiddenWeights, generateRandomWeights(hiddenLayers+1))));
+        aiPlayers.push(new AIPlayer(new NeuralNetwork(5, hiddenLayers, hiddenWeights, [generateRandomWeights(hiddenLayers+1), generateRandomWeights(hiddenLayers+1)])));
         aiPlayers[i].draw();
     }
     
