@@ -35,6 +35,12 @@ document.getElementById("start").addEventListener("click", function() {
         }, 10);
         
         let popSize = document.getElementById("population").value;
+        if (popSize > 5000) {
+            popSize = 5000;
+        } else if (popSize < 100) {
+            popSize = 100;
+        }
+
         let mutRate = document.getElementById("mutationRate").value;
         let hiddenLayerNodes = document.getElementById("hiddenLayerNodes").value;
         aiStart(popSize, mutRate, hiddenLayerNodes);
