@@ -120,6 +120,7 @@ async function testGeneration() {
 
     while (numDead+1 <= aiPlayers.length) {
         if (cancel) { break; }
+        document.getElementById("alive").innerText = `Alive: ${aiPlayers.length-numDead}`;
         xTraveled++;
         gameArea.updateSize();
 
